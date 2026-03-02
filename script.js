@@ -1,4 +1,4 @@
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
       const $ = (s) => document.querySelector(s);
       const $$ = (s) => document.querySelectorAll(s);
 
@@ -483,100 +483,92 @@
       
       async function getProfile(user) { if (!user) return null; const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single(); if (error) { console.error("Gagal mengambil profil:", error); return null; } return data; }
       
-   function renderAdminForm(postToEdit = null, formType = 'dlc') {
-  const isEditing = postToEdit !== null;
-  let title = '';
-  let categoryHTML = '';
+      function renderAdminForm(postToEdit = null, formType = 'dlc') {
+        const isEditing = postToEdit !== null;
+        let title = '';
+        let categoryHTML = '';
 
-  if (formType === 'info') {
-    title = isEditing ? 'Edit Informasi' : 'Buat Informasi Baru';
-    categoryHTML = `<input type="hidden" id="category" name="category" value="Informasi">
-                    <label style="display: block; margin-bottom: 1rem; color: var(--muted);">Kategori: Informasi</label>`;
-  } else { 
-    title = isEditing ? 'Edit Postingan' : 'Buat Postingan Baru';
-    categoryHTML = `
-      <label for="category">Kategori:</label>
-      <select id="category" name="category" required>
-        <option value="Template">Template</option>
-        <option value="Addon">Addon</option>
-        <option value="TexturePack">TexturePack</option>
-      </select>
-    `;
-  }
+        if (formType === 'info') {
+          title = isEditing ? 'Edit Informasi' : 'Buat Informasi Baru';
+          categoryHTML = `<input type="hidden" id="category" name="category" value="Informasi">
+                          <label style="display: block; margin-bottom: 1rem; color: var(--muted);">Kategori: Informasi</label>`;
+        } else { 
+          title = isEditing ? 'Edit Postingan' : 'Buat Postingan Baru';
+          categoryHTML = `
+            <label for="category">Kategori:</label>
+            <select id="category" name="category" required>
+              <option value="Template">Template</option>
+              <option value="Addon">Addon</option>
+              <option value="TexturePack">TexturePack</option>
+            </select>
+          `;
+        }
+        
+        authContainer.innerHTML = `
+          <a href="#" class="admin-nav-link" id="go-to-profile-view">Kembali ke Profil</a>
+          <h2>${title}</h2>
+          <form id="upload-form" data-editing-id="${isEditing ? postToEdit.id : ''}">
+            <label for="title">Judul:</label>
+            <input type="text" id="title" name="title" required value="${isEditing ? postToEdit.title : ''}">
+            <label for="description">Deskripsi:</label>
+            <textarea id="description" name="description" rows="4" required>${isEditing ? postToEdit.description : ''}</textarea>
+            
+            ${categoryHTML} 
+            
+            <label for="img">URL Gambar:</label>
+            <input type="text" id="img" name="img" required value="${isEditing ? postToEdit.img : ''}">
+            
+            <label>Link Unduhan:</label>
+            <div id="dynamic-links-container">
+              </div>
+            <button type="button" id="add-link-btn"><i class="fas fa-plus"></i> Tambah Link</button>
+            
+            <input type="checkbox" id="isFeatured" name="isFeatured" style="width: auto; margin-bottom: 1rem;">
+            <label for="isFeatured">Jadikan Pilihan Editor?</label><br>
+            <button type="submit">${isEditing ? 'Simpan Perubahan' : 'Upload Postingan'}</button>
+          </form>
+          <button id="logout-btn" style="margin-top: 1rem;">Logout</button>
+        `;
 
-  authContainer.innerHTML = `
-    <a href="#" class="admin-nav-link" id="go-to-profile-view">Kembali ke Profil</a>
-    <h2>${title}</h2>
-    <form id="upload-form" data-editing-id="${isEditing ? postToEdit.id : ''}">
-      <label for="title">Judul:</label>
-      <input type="text" id="title" name="title" required value="${isEditing ? postToEdit.title : ''}">
-      
-      <label for="description">Deskripsi:</label>
-      <textarea id="description" name="description" rows="4" required>${isEditing ? postToEdit.description : ''}</textarea>
-      
-      ${categoryHTML} 
-      
-      <label for="img">URL Gambar:</label>
-      <input type="text" id="img" name="img" required value="${isEditing ? postToEdit.img : ''}">
-      
-      <label>Link Unduhan:</label>
-      <div id="dynamic-links-container"></div>
-      <button type="button" id="add-link-btn"><i class="fas fa-plus"></i> Tambah Link</button>
-      
-      <input type="checkbox" id="isFeatured" name="isFeatured" style="width: auto; margin-bottom: 1rem;">
-      <label for="isFeatured">Jadikan Pilihan Editor?</label><br>
+        if (isEditing) {
+          if (formType === 'dlc') {
+            authContainer.querySelector('#category').value = postToEdit.category;
+          }
+          authContainer.querySelector('#isFeatured').checked = postToEdit.isFeatured;
+        }
 
-      <!-- 🆕 FIELD NOTIFIKASI OPSIONAL -->
-      <label for="notif_title">Judul Notifikasi (opsional):</label>
-      <input type="text" id="notif_title" name="notif_title" placeholder="Kosongkan untuk menggunakan default">
+        const linksContainer = $('#dynamic-links-container');
+            
+        const addLinkRow = (name = '', url = '') => {
+          const linkEntry = document.createElement('div');
+          linkEntry.className = 'link-entry';
+          linkEntry.innerHTML = `
+            <input type="text" class="link-name-input" placeholder="Nama Link (cth: MediaFire)" value="${name}" required>
+            <input type="url" class="link-url-input" placeholder="URL Link" value="${url}" required>
+            <button type="button" class="remove-link-btn" title="Hapus link ini"><i class="fas fa-trash"></i></button>
+          `;
+          linksContainer.appendChild(linkEntry);
+          linkEntry.querySelector('.remove-link-btn').addEventListener('click', () => {
+            linkEntry.remove();
+          });
+        };
 
-      <label for="notif_body">Isi Notifikasi (opsional):</label>
-      <textarea id="notif_body" name="notif_body" rows="2" placeholder="Kosongkan untuk menggunakan default"></textarea>
+        $('#add-link-btn').addEventListener('click', () => addLinkRow());
 
-      <button type="submit">${isEditing ? 'Simpan Perubahan' : 'Upload Postingan'}</button>
-    </form>
-    <button id="logout-btn" style="margin-top: 1rem;">Logout</button>
-  `;
+        if (isEditing && postToEdit.links && typeof postToEdit.links === 'object') {
+          for (const [name, url] of Object.entries(postToEdit.links)) {
+            if (url) {
+              addLinkRow(name, url);
+            }
+          }
+        } else if (!isEditing) {
+          addLinkRow(); 
+        }
 
-  // Isi nilai jika sedang edit (opsional, bisa dikosongi)
-  if (isEditing) {
-    if (formType === 'dlc') {
-      authContainer.querySelector('#category').value = postToEdit.category;
-    }
-    authContainer.querySelector('#isFeatured').checked = postToEdit.isFeatured;
-    // Notifikasi tidak diisi ulang (biarkan kosong)
-  }
-
-  const linksContainer = $('#dynamic-links-container');
-  
-  const addLinkRow = (name = '', url = '') => {
-    const linkEntry = document.createElement('div');
-    linkEntry.className = 'link-entry';
-    linkEntry.innerHTML = `
-      <input type="text" class="link-name-input" placeholder="Nama Link (cth: MediaFire)" value="${name}" required>
-      <input type="url" class="link-url-input" placeholder="URL Link" value="${url}" required>
-      <button type="button" class="remove-link-btn" title="Hapus link ini"><i class="fas fa-trash"></i></button>
-    `;
-    linksContainer.appendChild(linkEntry);
-    linkEntry.querySelector('.remove-link-btn').addEventListener('click', () => {
-      linkEntry.remove();
-    });
-  };
-
-  $('#add-link-btn').addEventListener('click', () => addLinkRow());
-
-  if (isEditing && postToEdit.links && typeof postToEdit.links === 'object') {
-    for (const [name, url] of Object.entries(postToEdit.links)) {
-      if (url) addLinkRow(name, url);
-    }
-  } else if (!isEditing) {
-    addLinkRow(); // satu baris kosong untuk postingan baru
-  }
-
-  authContainer.querySelector('#upload-form').addEventListener('submit', handleSubmit);
-  authContainer.querySelector('#logout-btn').addEventListener('click', handleLogout);
-  $('#go-to-profile-view').addEventListener('click', (e) => { e.preventDefault(); renderProfileView(); });
-}
+        authContainer.querySelector('#upload-form').addEventListener('submit', handleSubmit);
+        authContainer.querySelector('#logout-btn').addEventListener('click', handleLogout);
+        $('#go-to-profile-view').addEventListener('click', (e) => { e.preventDefault(); renderProfileView(); });
+      }
 
       async function handleRoleUpdate(userId, newRole) { const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId); if (error) { showNotification(`Gagal mengubah role: ${error.message}`, 'error'); } else { showNotification('Role pengguna berhasil diubah.', 'success'); } }
       async function renderUserManagementView() {
@@ -786,63 +778,53 @@ async function handleDeleteRequest(e) {
       }
 
       async function handleSubmit(e) {
-  e.preventDefault();
-  const form = e.target;
-  const editingId = form.dataset.editingId;
-
-  const links = {};
-  $$('#dynamic-links-container .link-entry').forEach(entry => {
-    const name = entry.querySelector('.link-name-input').value.trim();
-    const url = entry.querySelector('.link-url-input').value.trim();
-    if (name && url) {
-      links[name] = url;
-    }
-  });
-
-  const postData = {
-    title: form.title.value,
-    description: form.description.value,
-    category: form.category.value,
-    isFeatured: form.isFeatured.checked,
-    img: form.img.value,
-    links: links
-  };
-
-  const { error } = editingId
-    ? await supabase.from('posts').update(postData).eq('id', editingId)
-    : await supabase.from('posts').insert([postData]);
-
-  if (error) {
-    showNotification('Operasi Gagal: ' + error.message, 'error');
-  } else {
-    showNotification(`Postingan berhasil ${editingId ? 'diperbarui' : 'dibuat'}!`, 'success');
-    form.reset();
-    closeAuthModal();
-
-    // 🆕 KIRIM NOTIFIKASI HANYA UNTUK POSTINGAN BARU (bukan edit)
-    if (!editingId) {
-      // Ambil nilai kustom dari form (jika diisi)
-      const notifTitle = form.notif_title?.value.trim() || 'Postingan Baru!';
-      const notifBody = form.notif_body?.value.trim() || `Cek ${postData.category} terbaru: ${postData.title}`;
-
-      try {
-        console.log('Mengirim notifikasi push...', { notifTitle, notifBody });
-        const { error: funcError } = await supabase.functions.invoke('send-push-notification', {
-          body: {
-            title: notifTitle,
-            body: notifBody,
-            // url: window.location.origin + '/post/' + newPostId, // jika ingin langsung ke postingan
+        e.preventDefault(); const form = e.target; const editingId = form.dataset.editingId;
+        
+        const links = {};
+        $$('#dynamic-links-container .link-entry').forEach(entry => {
+          const name = entry.querySelector('.link-name-input').value.trim();
+          const url = entry.querySelector('.link-url-input').value.trim();
+          if (name && url) {
+            links[name] = url;
           }
         });
-        if (funcError) throw funcError;
-        console.log('Notifikasi push berhasil dikirim.');
-      } catch (err) {
-        console.error('Gagal mengirim notifikasi:', err);
-        showDebugMessage(err); // Tampilkan error di layar
+
+        const postData = { 
+          title: form.title.value, 
+          description: form.description.value, 
+          category: form.category.value, 
+          isFeatured: form.isFeatured.checked, 
+          img: form.img.value, 
+          links: links 
+        };
+
+        const { error } = editingId ? await supabase.from('posts').update(postData).eq('id', editingId) : await supabase.from('posts').insert([postData]);
+        if (error) { showNotification('Operasi Gagal: ' + error.message, 'error'); } else { 
+            showNotification(`Postingan berhasil ${editingId ? 'diperbarui' : 'dibuat'}!`, 'success'); 
+            form.reset(); 
+            closeAuthModal(); 
+
+            if (!editingId) {
+                try {
+                    console.log('Mengirim notifikasi push ke pengguna...');
+                    const { error: funcError } = await supabase.functions.invoke('send-push-notification', {
+                        body: { 
+                            title: 'Postingan Baru!', 
+                            body: `Cek ${postData.category} terbaru: ${postData.title}`
+                        }
+                    });
+                    if (funcError) {
+                        throw funcError;
+                    }
+                    console.log('Perintah kirim notifikasi push berhasil.');
+                } catch (error) {
+                    console.error('Gagal memicu fungsi notifikasi:', error);
+                    // TAMPILKAN ERROR DI LAYAR
+                    showDebugMessage(error); 
+                }
+            }
+        }
       }
-    }
-  }
-}
 
       async function handleDeletePost(post) {
         if (!confirm(`Anda yakin ingin menghapus postingan "${post.title}"? Tindakan ini tidak bisa dibatalkan.`)) {
