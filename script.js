@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
           debugConsole.appendChild(errorEntry);
           debugConsole.scrollTop = debugConsole.scrollHeight;
         } catch(e) {
-          // Fallback if debug console itself fails
           console.error('Debug console failure:', e);
         }
       }
@@ -88,20 +87,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return outputArray;
       }
 
-      // --- KODE DIPERBARUI DARI tes.js ---
       async function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) {
           showNotification('Browser Anda tidak mendukung notifikasi.', 'error');
           return null;
         }
         try {
-          // Pastikan path ke service worker benar
           const registration = await navigator.serviceWorker.register('/service-worker.js', {
             scope: '/'
           });
           console.log('Service Worker terdaftar:', registration);
           
-          // Cek status subscription setelah service worker aktif
           if (registration.active) {
             await checkSubscriptionStatus();
           } else {
@@ -119,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return null;
         }
       }
-      // --- AKHIR KODE DIPERBARUI ---
 
       async function askNotificationPermission() {
         if (!('Notification' in window)) {
@@ -272,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       async function sendTestNotification() {
         try {
-          const { error } = await supabase.functions.invoke('send-push-notification', {
+          const { data, error } = await supabase.functions.invoke('send-push-notification', {
             body: { 
               title: 'Test Notifikasi', 
               body: 'Ini adalah test notifikasi dari Luminox!',
@@ -284,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showNotification('Test notifikasi berhasil dikirim!', 'success');
         } catch (error) {
           console.error('Gagal mengirim test notifikasi:', error);
-          showNotification('Gagal mengirim test notifikasi.', 'error');
+          showNotification('Gagal mengirim test notifikasi. Pastikan Edge Function "send-push-notification" sudah di-deploy di Supabase.', 'error');
           showDebugMessage(error); 
         }
       }
@@ -333,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else { filteredPosts = state.posts.filter(post => { const query = state.searchQuery.toLowerCase(); const matchesSearch = post.title.toLowerCase().includes(query) || post.description.toLowerCase().includes(query); const matchesCategory = !state.currentCategory || post.category.toLowerCase() === state.currentCategory.toLowerCase(); return matchesSearch && matchesCategory; }); }
         if (filteredPosts.length === 0) { const messages = { wishlist: 'Wishlist Anda kosong.', history: 'Riwayat unduhan kosong.', featured: 'Tidak ada pilihan editor saat ini.' }; grid.innerHTML = `<p style="color: var(--muted); text-align: center; grid-column: 1 / -1;">${messages[state.currentCategory] || 'Tidak ada postingan yang cocok.'}</p>`; } 
         else { filteredPosts.forEach(post => grid.appendChild(createPostElement(post))); }
-        const titles = { '': 'Postingan Terbaru', wishlist: 'Wishlist Saya', history: 'Riwayat Unduhan', featured: 'Pilihan Editor', addon: 'Addons', template: 'Templates', texturepack: 'TexturePack', informasi: 'Informasi' };
+        const titles = { '': 'Postingan Terbaru', wishlist: 'Wishlist Saya', history: 'Riwayat Unduhan', featured: 'Pilihan Editor', addon: 'Addons', template: 'Templates', texturepack: 'TexturePack', game: 'Game', informasi: 'Informasi' };
         $('#page-title').textContent = state.searchQuery ? `Hasil untuk "${state.searchQuery}"` : (titles[state.currentCategory] || 'Postingan');
         $('#skeleton-grid').classList.add('hidden'); $('#post-grid').classList.remove('hidden');
       };
@@ -500,6 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <option value="Template">Template</option>
               <option value="Addon">Addon</option>
               <option value="TexturePack">TexturePack</option>
+              <option value="Game">Game</option>
             </select>
           `;
         }
@@ -635,7 +631,6 @@ async function handleDeleteRequest(e) {
       function renderLoginView() { authContainer.innerHTML = `<div id="login-view"><h2>Login</h2><form id="login-form"><label for="email">Email:</label><input type="email" id="email" name="email" required autocomplete="email"><label for="password">Password:</label><input type="password" id="password" name="password" required autocomplete="current-password"><button type="submit">Login</button></form><p style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">Belum punya akun? <a href="#" id="show-register">Daftar</a></p></div>`; authContainer.querySelector('#login-form').addEventListener('submit', handleLogin); authContainer.querySelector('#show-register').addEventListener('click', (e) => { e.preventDefault(); renderRegisterView(); }); }
       function renderRegisterView() { authContainer.innerHTML = `<div id="register-view"><h2>Daftar Akun Baru</h2><form id="register-form"><label for="register-email">Email:</label><input type="email" id="register-email" name="email" required autocomplete="email"><label for="register-password">Password:</label><input type="password" id="register-password" name="password" required autocomplete="new-password"><button type="submit">Daftar</button></form><p style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">Sudah punya akun? <a href="#" id="show-login">Login</a></p></div>`; authContainer.querySelector('#register-form').addEventListener('submit', handleRegister); authContainer.querySelector('#show-login').addEventListener('click', (e) => { e.preventDefault(); renderLoginView(); }); }
       
-      // --- KODE DIPERBARUI DARI tes.js ---
       async function renderProfileView() {
           const user = state.user; const profile = state.profile;
           if (user && profile) {
@@ -665,7 +660,6 @@ async function handleDeleteRequest(e) {
                     <span>Kelola Request</span>
                  </button>` : '';
               
-              // KODE BARU: Tombol Test Notifikasi
               const testNotificationButtonHTML = isModerator ? 
                 `<button id="test-notification-btn" class="admin-action-btn">
                     <i class="fas fa-bell"></i>
@@ -720,7 +714,6 @@ async function handleDeleteRequest(e) {
                   const reqBtn = $('#manage-requests-btn');
                   if (reqBtn) reqBtn.addEventListener('click', (e) => { e.preventDefault(); renderRequestManagementView(); });
                   
-                  // KODE BARU: Event listener untuk tombol test notif
                   const testBtn = $('#test-notification-btn');
                   if (testBtn) testBtn.addEventListener('click', sendTestNotification);
               }
@@ -732,7 +725,6 @@ async function handleDeleteRequest(e) {
               renderLoginView(); 
           }
       }
-      // --- AKHIR KODE DIPERBARUI ---
 
       async function handleProfileUpdate(e) {
           e.preventDefault(); const form = e.target; const user = state.user; const newNickname = form.nickname.value; const avatarFile = form.avatar.files[0]; let avatar_url = state.profile.avatar_url;
@@ -807,19 +799,20 @@ async function handleDeleteRequest(e) {
             if (!editingId) {
                 try {
                     console.log('Mengirim notifikasi push ke pengguna...');
-                    const { error: funcError } = await supabase.functions.invoke('send-push-notification', {
+                    const { data: funcData, error: funcError } = await supabase.functions.invoke('send-push-notification', {
                         body: { 
                             title: 'Postingan Baru!', 
                             body: `Cek ${postData.category} terbaru: ${postData.title}`
                         }
                     });
                     if (funcError) {
-                        throw funcError;
+                        console.warn('Edge function notifikasi tidak tersedia:', funcError);
+                        showNotification('Postingan berhasil, tetapi notifikasi push gagal dikirim (Edge Function tidak ditemukan).', 'error');
+                    } else {
+                        console.log('Notifikasi push berhasil dikirim:', funcData);
                     }
-                    console.log('Perintah kirim notifikasi push berhasil.');
                 } catch (error) {
                     console.error('Gagal memicu fungsi notifikasi:', error);
-                    // TAMPILKAN ERROR DI LAYAR
                     showDebugMessage(error); 
                 }
             }
@@ -857,7 +850,7 @@ async function handleDeleteRequest(e) {
         if (state.user) { 
           requestContainer.innerHTML = `
             <h2>Buat Request</h2>
-            <p style="font-size: 0.9rem; color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Ingin Addon, Template, atau TexturePack yang kalian mau? Silahkan ajukan request Anda!</p>
+            <p style="font-size: 0.9rem; color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Ingin Addon, Template, TexturePack, atau Game yang kalian mau? Silahkan ajukan request Anda!</p>
             <form id="request-form">
               <label for="request-title">Nama Item/Game:</label>
               <input type="text" id="request-title" name="title" required placeholder="Contoh: Shader Realistis">
@@ -867,6 +860,7 @@ async function handleDeleteRequest(e) {
                 <option value="Addon">Addon</option>
                 <option value="Template">Template</option>
                 <option value="TexturePack">TexturePack</option>
+                <option value="Game">Game</option>
               </select>
               <label for="request-description">Deskripsi (Opsional):</label>
               <textarea id="request-description" name="description" rows="3" placeholder="Jelaskan lebih detail tentang request Anda..."></textarea>
@@ -887,7 +881,7 @@ async function handleDeleteRequest(e) {
           $('#login-from-request').addEventListener('click', () => { closeRequestModal(); handleAuthButtonClick(); }); 
         }
       }
-      // --- FUNGSI handleRequestSubmit DIPERBARUI ---
+      
 async function handleRequestSubmit(e) {
   e.preventDefault(); 
   const form = e.target;
@@ -901,7 +895,6 @@ async function handleRequestSubmit(e) {
 
   console.log('📝 Mengirim request:', requestData);
 
-  // 1. Insert ke database
   const { data: newRecord, error } = await supabase
     .from('requests')
     .insert(requestData)
@@ -919,11 +912,9 @@ async function handleRequestSubmit(e) {
   form.reset();
   closeRequestModal();
   
-  // 2. Kirim notifikasi Telegram
   try {
     console.log('🔔 Mengirim notifikasi Telegram...');
     
-    // Ambil data user
     const { data: userProfile } = await supabase
       .from('profiles')
       .select('nickname')
@@ -942,14 +933,14 @@ async function handleRequestSubmit(e) {
     });
     
     if (telegramError) {
-      console.error('❌ Telegram function error:', telegramError);
-      showDebugMessage(telegramError); // Tampilkan error di layar
+      console.warn('❌ Telegram function tidak tersedia:', telegramError);
+      showNotification('Request tersimpan, tetapi notifikasi Telegram gagal (Edge Function tidak ditemukan).', 'error');
     } else {
       console.log('✅ Telegram function result:', data);
     }
   } catch (err) {
     console.error('❌ Unexpected Telegram error:', err);
-    showDebugMessage(err); // Tampilkan error di layar
+    showDebugMessage(err);
   }
 }
       
