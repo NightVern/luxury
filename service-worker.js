@@ -15,7 +15,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Aktivasi: Membersihkan cache lama
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -35,7 +34,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// --- PENTING: Menangani Notifikasi Push ---
+// --- Notifikasi Push ---
 self.addEventListener('push', (event) => {
   let data = { title: 'Luminox Update', body: 'Ada konten baru untukmu!' };
   
