@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const $ = (s) => document.querySelector(s);
       const $$ = (s) => document.querySelectorAll(s);
 
-      const SUPABASE_URL = 'https://zmhshfqpyekrcddsqhuz.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptaHNoZnFweWVrcmNkZHNxaHV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxMzgxNDAsImV4cCI6MjA3NTcxNDE0MH0.I_AMK5MYj4Ett8fFnAEq-w8HHSqL9NYKnfuaTZOy4O8';
+      const SUPABASE_URL = 'https://pjmzoprbvfsteshvcmin.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqbXpvcHJidmZzdGVzaHZjbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Mzk3NzcsImV4cCI6MjA5MTMxNTc3N30.m6TzEE0gyu3JwfFv92TgShl3dkNaaOfKi-g5DDB9h9I';
       
-      const VAPID_PUBLIC_KEY = 'BOGxyDihJa42olM4Y_rO3za2VQ6cojG89XkE3O38V1p_vLxzeYPaa2PS2QX7ciJfwpt0bEdDQPjB_qMOAQhN_KY';
+      const VAPID_PUBLIC_KEY = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhrKL2GBj/ThrJos8Vyr+0QhihTmzmbC5gexoXmGhUhJ430znbEmrj9gcKsLdqbz+0+4k5WsWd6bpU+b14YORng==';
 
       const { createClient } = window.supabase;
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
