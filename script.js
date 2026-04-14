@@ -266,23 +266,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       async function sendTestNotification() {
-        try {
-          const { data, error } = await supabase.functions.invoke('send-push-notification', {
-            body: { 
-              title: 'Test Notifikasi', 
-              body: 'Ini adalah test notifikasi dari Luminox!',
-              url: window.location.href
-            }
-          });
-          
-          if (error) throw error;
-          showNotification('Test notifikasi berhasil dikirim!', 'success');
-        } catch (error) {
-          console.error('Gagal mengirim test notifikasi:', error);
-          showNotification('Gagal mengirim test notifikasi. Pastikan Edge Function "send-push-notification" sudah di-deploy di Supabase.', 'error');
-          showDebugMessage(error); 
-        }
+  try {
+    const { data, error } = await supabase.functions.invoke('send-push-notification', {
+      body: { 
+        title: 'Test Notifikasi', 
+        body: 'Ini adalah test notifikasi dari Luminox!',
+        url: window.location.href
       }
+    });
+    if (error) throw error;
+    showNotification('Test notifikasi berhasil dikirim!', 'success');
+  } catch (error) {
+    console.error('Gagal mengirim test notifikasi:', error);
+    let msg = 'Gagal mengirim test notifikasi. ';
+    if (error.message?.includes('Failed to send a request')) {
+      msg += 'Edge function "send-push-notification" tidak ditemukan. Pastikan sudah di-deploy.';
+    } else {
+      msg += error.message;
+    }
+    showNotification(msg, 'error');
+    showDebugMessage(error);
+  }
+}
 
       const showLoading = (loading) => {
         state.isLoading = loading;
